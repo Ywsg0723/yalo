@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Electricity Bill Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    label, input { display: block; margin: 0.5em 0; }
+    input[type="number"] { width: 150px; }
+    .room-block { margin-top: 1em; padding: 1em; border: 1px solid #ccc; border-radius: 5px; }
+    .results { margin-top: 2em; }
+  </style>
+</head>
+<body>
+  <h1>Electricity Bill Calculator</h1>
+  <form id="billForm">
+    <label>Total Electricity Bill (RM): <input type="number" step="0.01" id="totalBill" required></label>
+
+    <div class="room-block">
+      <h3>Room 1/2</h3>
+      <label>Tenants: <input type="number" id="t1" required></label>
+      <label>Previous Meter (kWh): <input type="number" step="0.01" id="p1" required></label>
+      <label>Current Meter (kWh): <input type="number" step="0.01" id="c1" required></label>
+    </div>
+
+    <div class="room-block">
+      <h3>Room 3/4</h3>
+      <label>Tenants: <input type="number" id="t2" required></label>
+      <label>Previous Meter (kWh): <input type="number" step="0.01" id="p2" required></label>
+      <label>Current Meter (kWh): <input type="number" step="0.01" id="c2" required></label>
+    </div>
+
+    <div class="room-block">
+      <h3>Room 5/6</h3>
+      <label>Tenants: <input type="number" id="t3" required></label>
+      <label>Previous Meter (kWh): <input type="number" step="0.01" id="p3" required></label>
+      <label>Current Meter (kWh): <input type="number" step="0.01" id="c3" required></label>
+    </div>
+
+    <div class="room-block">
+      <h3>Room 7/8</h3>
+      <label>Tenants: <input type="number" id="t4" required></label>
+      <label>Previous Meter (kWh): <input type="number" step="0.01" id="p4" required></label>
+      <label>Current Meter (kWh): <input type="number" step="0.01" id="c4" required></label>
+    </div>
+
+    <button type="submit">Calculate</button>
+  </form>
+
+  <div class="results" id="results"></div>
+
+  <script>
+    document.getElementById('billForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const rate = 0.218;
+
+      const totalBill = parseFloat(document.getElementById('totalBill').value);
+      const tenants = [1,2,3,4].map(i => parseInt(document.getElementById('t'+i).value));
+      const prev = [1,2,3,4].map(i => parseFloat(document.getElementById('p'+i).value));
+      const curr = [1,2,3,4].map(i => parseFloat(document.getElementById('c'+i).value));
+
+      const aircons = curr.map((val, i) => (val - prev[i]) * rate);
+      const airconTotal = aircons.reduce((a,b) => a + b, 0);
+
+      const totalTenants = tenants.reduce((a,b) => a + b, 0);
+      const publicCost = totalBill - airconTotal;
+      const publicPerTenant = publicCost / totalTenants;
+
+      const totals = aircons.map((ac, i) => ac + tenants[i] * publicPerTenant);
+
+      const output = `
+        <h2>Billing Summary</h2>
+        <p>Total Electricity Bill: RM ${totalBill.toFixed(2)}</p>
+        <p>Total Aircon Cost: RM ${airconTotal.toFixed(2)}</p>
+        <p>Public Cost: RM ${publicCost.toFixed(2)}</p>
+        <p>Public Cost per Tenant: RM ${publicPerTenant.toFixed(2)}</p>
+        <h3>Room-wise Breakdown</h3>
+        <ul>
+          ${[1,2,3,4].map(i => `
+            <li>Room ${i*2-1}/${i*2} (${tenants[i-1]} tenants): Aircon RM ${aircons[i-1].toFixed(2)} | Total RM ${totals[i-1].toFixed(2)}</li>
+          `).join('')}
+        </ul>
+      `;
+
+      document.getElementById('results').innerHTML = output;
+    });
+  </script>
+</body>
+</html>
